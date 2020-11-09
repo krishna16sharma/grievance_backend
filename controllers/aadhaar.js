@@ -1,8 +1,8 @@
 const handleAadhaar = (req,res,db) =>{
-    const {email,person_id, person_name,password, username, a_no, day, month, year,door_no,street, area, city, state} = req.body;
-    console.log("Backend", email,person_id, person_name,password, username, a_no, day, month, year,door_no,street, area, city, state);
+    const {email,person_id, person_name,password, person_ph_number, ph2,username, a_no, day, month, year,door_no,street, area, city, state} = req.body;
+    console.log("Backend", email,person_id,person_name,password, person_ph_number,ph2,username, a_no, day, month, year,door_no,street, area, city, state);
 
-    if(!(email && person_name && person_id && password && username && a_no && day && month && year && door_no && street && area && city && state)){
+    if(!(email && person_name && person_id && password && person_ph_number && username && a_no && day && month && year && door_no && street && area && city && state)){
         return res.status(400).json("Empty values not accepted")
     }
     /*db.select('*').from('person')
@@ -20,7 +20,7 @@ const handleAadhaar = (req,res,db) =>{
             res.json(new_person)
         }
     )*/
-    console.log("Start transaction!", person_id, day)
+    console.log("Start transaction!", person_id, day, ph2=='')
     db.transaction(trx =>{
         trx.insert({
             aadhar_no: a_no,
@@ -46,9 +46,82 @@ const handleAadhaar = (req,res,db) =>{
                 password: password,
                 email: email,
                 aadhar_no: a_no
-            }).then(user => {
-                console.log("Done", user)
-                res.json(user[0]);
+            }).then(ph_number => {
+                if(ph2 ==''){
+                    trx.insert({
+                        person_id: person_id,
+                        person_ph_number: person_ph_number
+                    })
+                    .into('ph_number')
+                    .returning('*')
+                    .then(user =>{
+                        db.select('*').from('users')
+                        .then(
+                            u=>{
+                                var l = u.length-1
+                                var u_id ='US0'+(parseInt(u[l].user_id.substring(2))+1);
+                                console.log(u_id);
+                                db.insert({
+                                    user_id: u_id,
+                                    person_id: person_id
+                                })
+                                .into('users')
+                                .returning('*')
+                                .then(
+                                    users =>{
+                                        console.log("Done", users)
+                                        res.json(users[0]);
+                                    }
+                                )
+                            }
+                        )
+                    })
+                }
+                else{
+                    db.insert({
+                        person_id: person_id,
+                        person_ph_number: person_ph_number
+                    })
+                    .into('ph_number')
+                    .returning('person_id')
+                    .then(person =>{
+                        db.insert({
+                            person_id: person_id,
+                            person_ph_number: ph2
+                        })
+                        .into('ph_number')
+                        .returning('*')
+                        .then(
+                            ph2 =>{
+                                db.select('*').from('users')
+                                .then(
+                                    u=>{
+                                        var l = u.length-1
+                                        var u_id ='US0'+(parseInt(u[l].user_id.substring(2))+1);
+                                        console.log(u_id);
+                                        db.insert({
+                                            user_id: u_id,
+                                            person_id: person_id
+                                        })
+                                        .into('users')
+                                        .returning('*')
+                                        .then(
+                                            users =>{
+                                                console.log("Done", users)
+                                                res.json(users[0]);
+                                            }
+                                        )
+                                    }
+                                )
+
+                            }
+                        )
+                    }
+
+                    )
+
+                }
+
             })
         })
         .then(trx.commit)
