@@ -52,6 +52,38 @@ const handleLogin =(req,res,db) => {
                                         }
                                     }
                                 )
+                                .catch(
+                                    state =>{
+                                        db.select('*').from('state_government_user')
+                                        .where('person_id','=',user[0].person_id)
+                                        .then(
+                                            result2 =>{
+                                                if(result2[0].person_id){
+                                                    type = 'department'
+                                                    //resolve(type)
+                                                    user[0].type = type;
+                                                    res.json(user[0])
+                                                }
+                                            }
+                                        )
+                                        .catch(
+                                            ut =>{
+                                                db.select('*').from('union_territory_user')
+                                                .where('person_id','=',user[0].person_id)
+                                                .then(
+                                                    result2 =>{
+                                                        if(result2[0].person_id){
+                                                            type = 'department'
+                                                            //resolve(type)
+                                                            user[0].type = type;
+                                                            res.json(user[0])
+                                                        }
+                                                    }
+                                                )
+                                            }
+                                        )
+                                    }
+                                )
                             }
                         )
                     }
