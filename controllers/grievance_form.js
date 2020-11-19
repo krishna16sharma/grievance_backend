@@ -1,6 +1,11 @@
 const handleGrievance =(req,res,db) => {
     var {g_id, year, month, day, g_body, g_type, a_id, p_id} = req.body;
     //console.log(req.body);
+    var ip = (Math.floor(Math.random() * 255) + 1)+"."+(Math.floor(Math.random() * 255))+"."+(Math.floor(Math.random() * 255))+"."+(Math.floor(Math.random() * 255));
+    var act="Submitted grievance";
+    var n=0;
+    let logid='L';
+
     db.select('response_id').from('grievance_priority')
     .where('grievance_type', '=',g_type)
     .then(
@@ -41,7 +46,29 @@ const handleGrievance =(req,res,db) => {
                                                     grievance_id: g_id,
                                                     department_id: department
                                                 }).then(id => {
-                                                    res.json(id[0]);
+                                                    db('website_traffic').count('log_id').then(x=>{
+                                                        n=parseInt(x[0].count)+1;
+
+                                                        logid='L'+n
+                                                        //console.log(logid, n);
+                                                        function getFormattedDate() {
+                                                            var date = new Date();
+                                                            var str = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + " " +  date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+                                                            return str;
+                                                        }
+                                                        db.insert({
+                                                            log_id: logid,
+                                                            ip: ip,
+                                                            activity:act,
+                                                            user_id:u_id,
+                                                            timestamp:getFormattedDate()
+                                                        })
+                                                        .into('website_traffic')
+                                                        .returning('log_id')
+                                                        .then(db.select('*').from('website_traffic'))
+                                                        .then(wt=>{res.json(id[0]);})
+                                                    });
+
                                                 })
                                             }
                                             else if(concerned_body == 'ST'){
@@ -51,9 +78,32 @@ const handleGrievance =(req,res,db) => {
                                                 .insert({
                                                     grievance_id: g_id,
                                                     state_abbreviation: abbreviation
-                                                }).then(state_id =>{
-                                                    res.json(state_id[0]);
-                                                })
+                                                }).then(
+                                                    state_id => {
+                                                        db('website_traffic').count('log_id').then(x=>{
+                                                            n=parseInt(x[0].count)+1;
+
+                                                            logid='L'+n
+                                                            //console.log(logid, n);
+                                                            function getFormattedDate() {
+                                                                var date = new Date();
+                                                                var str = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + " " +  date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+                                                                return str;
+                                                            }
+                                                            db.insert({
+                                                                log_id: logid,
+                                                                ip: ip,
+                                                                activity:act,
+                                                                user_id:u_id,
+                                                                timestamp:getFormattedDate()
+                                                            })
+                                                            .into('website_traffic')
+                                                            .returning('log_id')
+                                                            .then(db.select('*').from('website_traffic'))
+                                                            .then(wt=>{res.json(state_id[0]);})
+                                                        });
+
+                                                    })
                                             }
                                             else{
                                                 var abbreviation = grievance_id[0].substring(4,6);
@@ -62,8 +112,30 @@ const handleGrievance =(req,res,db) => {
                                                 .insert({
                                                     grievance_id: g_id,
                                                     ut_abbreviation: abbreviation
-                                                }).then(ut_id =>{
-                                                    res.json(state_id[0]);
+                                                }).then(ut_id => {
+                                                    db('website_traffic').count('log_id').then(x=>{
+                                                        n=parseInt(x[0].count)+1;
+
+                                                        logid='L'+n
+                                                        //console.log(logid, n);
+                                                        function getFormattedDate() {
+                                                            var date = new Date();
+                                                            var str = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + " " +  date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+                                                            return str;
+                                                        }
+                                                        db.insert({
+                                                            log_id: logid,
+                                                            ip: ip,
+                                                            activity:act,
+                                                            user_id:u_id,
+                                                            timestamp:getFormattedDate()
+                                                        })
+                                                        .into('website_traffic')
+                                                        .returning('log_id')
+                                                        .then(db.select('*').from('website_traffic'))
+                                                        .then(wt=>{res.json(ut_id[0]);})
+                                                    });
+
                                                 })
                                             }
                                         }

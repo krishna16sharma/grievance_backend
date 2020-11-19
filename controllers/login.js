@@ -7,7 +7,6 @@ const handleLogin =(req,res,db) => {
     db.select('username','password').from('person')
     .where('username', '=', username)
     .then(data =>{
-        //console.log(data, data[0].password);
         if(password == data[0].password){
             return db.select('*').from('person')
             .where('username','=',username)
@@ -19,7 +18,6 @@ const handleLogin =(req,res,db) => {
                     result =>{
                         if(result[0].person_id){
                             type = 'admin'
-                            //resolve(type)
                             user[0].type = type;
                             res.json(user[0])
                         }
