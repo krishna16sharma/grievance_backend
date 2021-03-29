@@ -32,7 +32,7 @@ const handleRegister = (req,res,db) =>{
             res.json(new_person)
         }
     )
-    /*db.transaction(trx =>{
+    db.transaction(trx =>{
         trx.insert({
             hash: hash,
             email:email
@@ -53,7 +53,7 @@ const handleRegister = (req,res,db) =>{
         .then(trx.commit)
         .catch(trx.rollback)
     })
-    .catch(err => res.status(400).json('Unable to register'))*/
+    .catch(err => res.status(400).json('Unable to register'))
 }
 
 module.exports ={
